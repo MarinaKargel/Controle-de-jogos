@@ -1,0 +1,222 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+  <title>Hands on Work VI - Marina Guenter Kargel - Tabelas</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.1.3/dist/css/bootstrap.min.css">
+  <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.14.3/dist/umd/popper.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.1.3/dist/js/bootstrap.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400&display=swap" rel="stylesheet">
+</head>
+<body style="background-color: lightblue">
+  <div class="container">
+    <div class="row">
+      <div class="col-sm-6" style="margin-top: 10%; margin-bottom: 10%;">
+        <h3 style="text-align: center;">Plataformas</h3>
+        <table id="plataformaTable" class="table table-bordered table-condensed table-striped" style="background-color: white">
+          <thead>
+            <tr>
+              <th>Nome</th>
+              <th>Marca</th>
+              <th>Portátil</th>
+              <th>Editar</th>
+              <th>Deletar</th>
+            </tr>
+          </thead>
+        </table>
+        <div class="col-sm-12" style="display: flex; justify-content: center">
+          <button type="button" id="addButton" class="btn btn-primary" onclick="goToCadastroPlataforma();">Cadastrar Plataforma</button>
+        </div>
+      </div>
+      <div class="col-sm-6" style="margin-top: 10%; margin-bottom: 10%;">
+        <h3 style="text-align: center;">Jogos</h3>
+        <table id="jogoTable" class="table table-bordered table-condensed table-striped"  style="background-color: white">
+          <thead>
+            <tr>
+              <th>Nome</th>
+              <th>Gênero</th>
+              <th>Mídia</th>
+              <th>Plataforma</th>
+              <th>Editar</th>
+              <th>Deletar</th>
+            </tr>
+          </thead>
+        </table>
+        <div  class="col-sm-12" style="display: flex; justify-content: center">
+          <button type="button" id="addButton" class="btn btn-primary" onclick="goToCadastroJogo();">Cadastrar Jogo</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    $(document).ready(function () {
+      plataformaList();
+      jogoList();
+    });
+
+    var Jogo = {
+      id: Number,
+      nome: String,
+      genero: String,
+      midia: Boolean,
+      plataforma: Plataforma
+    }
+
+    var Plataforma = {
+      id: Number,
+      nome: String,
+      marca: String,
+      portatil: Boolean
+    }
+
+    //JOGO
+    function jogoList() {
+      $.ajax({
+        url: 'http://localhost:8080/api/v1/jogo',
+        type: 'GET',
+        dataType: 'json',
+        success: function (jogos) {
+          jogoListSuccess(jogos);
+        }
+      });
+    }
+
+    function jogoListSuccess(jogos) {
+      $.each(jogos, function (index, jogo) {
+        jogo.midia = jogo.midia ? 'Física' : 'Digital';
+        jogoAddRow(jogo);
+      });
+    }
+
+    function jogoAddRow(jogo) {
+      if ($("#jogoTable tbody").length == 0) {
+        $("#jogoTable").append("<tbody></tbody>");
+      }
+
+      $("#jogoTable tbody").append(jogoBuildTableRow(jogo));
+    }
+
+    function jogoBuildTableRow(jogo) {
+      var ret = "<tr>" +
+            "</td>" +
+            "<td>" + jogo.nome + "</td>" +
+            "<td>" + jogo.genero + "</td>" +
+            "<td>" + jogo.midia + "</td>" +
+            "<td>" + jogo.plataforma.nome + "</td>" +
+            "<td>" +
+              "<button type='button' " +
+                  "onclick='goToEditarJogo(this);' " +
+                  "class='btn btn-sm' " +
+                  "style='background-color:transparent'" + 
+                  "data-id='" + jogo.id + "'>" +
+                  "<i class='fa fa-pencil'></i>" + 
+              "</button>" +
+            "<td>" +
+              "<button type='button' " +
+              "onclick='jogoDelete(this);' " +
+                      "class='btn btn-sm' " +
+                      "style='background-color:transparent'" + 
+                      "data-id='" + jogo.id + "'>" +
+                      "<i class='fa fa-trash'></i>" +
+              "</button>" +
+            "</td>" +
+          "</tr>";
+      return ret;
+    }
+
+    function jogoDelete(element) {
+      $.ajax({
+        url: "http://localhost:8080/api/v1/jogo/" + $(element).data("id"),
+        type: 'DELETE',
+        success: function (jogo) {
+          $(element).parents("tr").remove();
+        }
+      });
+    }
+
+    function plataformaList() {
+      $.ajax({
+        url: 'http://localhost:8080/api/v1/plataforma',
+        type: 'GET',
+        dataType: 'json',
+        success: function (plataformas) {
+          plataformaListSuccess(plataformas);
+        }
+      });
+    }
+
+    function plataformaListSuccess(plataformas) {
+      $.each(plataformas, function (index, plataforma) {
+        plataforma.portatil = plataforma.portatil ? 'Sim' : 'Não';
+        plataformaAddRow(plataforma);
+      });
+    }
+
+    function plataformaAddRow(plataforma) {
+      if ($("#plataformaTable tbody").length == 0) {
+        $("#plataformaTable").append("<tbody></tbody>");
+      }
+
+      $("#plataformaTable tbody").append(plataformaBuildTableRow(plataforma));
+    }
+
+    function plataformaBuildTableRow(plataforma) {
+      var ret = "<tr>" +
+            "</td>" +
+            "<td>" + plataforma.nome + "</td>" +
+            "<td>" + plataforma.marca + "</td>" +
+            "<td>" + plataforma.portatil + "</td>" +
+            "<td>" +
+              "<button type='button' " +
+                  "onclick='goToEditarPlataforma(this);' " +
+                  "class='btn btn-sm' " +
+                  "style='background-color:transparent'" + 
+                  "data-id='" + plataforma.id + "'>" +
+                  "<i class='fa fa-pencil'></i>" +
+              "</button>" +
+            "<td>" +
+              "<button type='button' " +
+                      "onclick='plataformaDelete(this);' " +
+                      "class='btn btn-sm' " +
+                      "style='background-color:transparent'" + 
+                      "data-id='" + plataforma.id + "'>" +
+                      "<i class='fa fa-trash'></i>" +
+              "</button>" +
+            "</td>" +
+          "</tr>";
+      return ret;
+    }
+
+    function plataformaDelete(element) {
+      $.ajax({
+        url: "http://localhost:8080/api/v1/plataforma/" + $(element).data("id"),
+        type: 'DELETE',
+        success: function (plataforma) {
+          $(element).parents("tr").remove();
+        }
+      });
+    }
+
+    function goToCadastroPlataforma() {
+      window.location.href="cadastro-plataforma.html"; 
+    }
+
+    function goToCadastroJogo() {
+      window.location.href="cadastro-jogo.html"; 
+    }
+
+    function goToEditarJogo(element) {
+      localStorage.setItem("jogoId", $(element).data("id"));
+      window.location.replace("editar-jogo.html");
+    }
+
+    function goToEditarPlataforma(element) {
+      localStorage.setItem("plataformaId", $(element).data("id"));
+      window.location.replace("editar-plataforma.html");
+    }
+  </script>
+</body>
+</html>
